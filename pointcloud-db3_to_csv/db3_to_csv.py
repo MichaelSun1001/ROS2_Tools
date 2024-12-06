@@ -7,7 +7,7 @@ from rclpy.serialization import deserialize_message
 
 # 定义要读取的 topic 和对应的消息类型
 topics_to_check = {
-    "/ars548": PointCloud2,
+    "/ars548": PointCloud,
     "/hugin_raf_1/radar_data": PointCloud2,
 }
 

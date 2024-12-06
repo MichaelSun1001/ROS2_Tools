@@ -22,8 +22,11 @@ def process_db3_file(db3_file, output_dir):
         print(f"Error: DB3 file '{db3_file}' not found.")
         return
 
+    # 直接使用 db3 文件的基础名称创建输出目录
     db3_base_name = os.path.splitext(os.path.basename(db3_file))[0]
-    output_image_dir = os.path.join(output_dir, db3_base_name)
+    output_image_dir = output_dir  # 使用上层传入的输出目录
+
+    # 确保输出目录存在
     os.makedirs(output_image_dir, exist_ok=True)
 
     # 设置存储选项
@@ -62,7 +65,7 @@ def process_db3_file(db3_file, output_dir):
                     # 修改文件名格式
                     image_file_path = os.path.join(
                         output_image_dir,
-                        f"image_compressed_{frame_id_image}_{timestamp}.png",
+                        f"{topic.replace('/', '_').strip('_')}_compressed_{frame_id_image}_{timestamp}.png",
                     )
                     cv2.imwrite(image_file_path, image)
                     print(f"Compressed image saved to {image_file_path}")
@@ -81,7 +84,8 @@ def process_db3_file(db3_file, output_dir):
                 topic_frame_counters[topic] += 1
                 # 修改文件名格式
                 image_file_path = os.path.join(
-                    output_image_dir, f"image_raw_{frame_id_image}_{timestamp}.png"
+                    output_image_dir,
+                    f"{topic.replace('/', '_').strip('_')}_raw_{frame_id_image}_{timestamp}.png",
                 )
                 cv2.imwrite(image_file_path, image_data)
                 print(f"Image saved to {image_file_path}")
@@ -101,7 +105,7 @@ def process_all_db3_files(parent_dir, output_parent_dir):
             if file.endswith(".db3"):
                 db3_file_path = os.path.join(root, file)
 
-                # 创建一个与 db3 文件所在文件夹同名的输出文件夹
+                # 直接使用 db3 文件所在目录的名字作为输出目录
                 relative_path = os.path.relpath(root, parent_dir)
                 output_dir = os.path.join(output_parent_dir, relative_path)
 

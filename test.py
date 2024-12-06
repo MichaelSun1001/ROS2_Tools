@@ -11,6 +11,14 @@ output_parent_dir = "/media/sax/新加卷/processed_images"
 
 os.makedirs(output_parent_dir, exist_ok=True)
 
+# 需要处理的指定话题列表
+topics_to_process = [
+    "/usb_cam_1/compressed",  # 话题1
+    "/camera/depth/image_raw",  # 话题2
+    "/hugin_raf_1/radar_data",
+    # 添加其他你需要处理的话题
+]
+
 
 def process_db3_file(db3_file, output_dir):
     """处理单个 DB3 文件，提取并保存图像数据"""
@@ -44,6 +52,10 @@ def process_db3_file(db3_file, output_dir):
         topic, serialized_msg, timestamp_ns = reader.read_next()
         print(f"Reading topic: {topic}")
 
+        # 判断当前话题是否在需要处理的列表中
+        if topic not in topics_to_process:
+            continue  # 如果当前话题不在指定列表中，跳过此话题
+
         # 判断消息类型并反序列化
         msg_type = topic_types.get(topic)
         if not msg_type:
@@ -63,7 +75,7 @@ def process_db3_file(db3_file, output_dir):
                     topic_frame_counters[topic] = frame_id_image + 1
                     image_file_path = os.path.join(
                         output_image_dir,
-                        f"{topic.replace('/', '_').strip('_')}_compressed_{frame_id_image}_{timestamp}.png",
+                        f"{topic.replace('/', '_').strip('_')}_CompressedImage_{frame_id_image}_{timestamp}.png",
                     )
                     cv2.imwrite(image_file_path, image)
                     print(f"Compressed image saved to {image_file_path}")
@@ -81,7 +93,7 @@ def process_db3_file(db3_file, output_dir):
                 topic_frame_counters[topic] = frame_id_image + 1
                 image_file_path = os.path.join(
                     output_image_dir,
-                    f"{topic.replace('/', '_').strip('_')}_raw_{frame_id_image}_{timestamp}.png",
+                    f"{topic.replace('/', '_').strip('_')}_Image_{frame_id_image}_{timestamp}.png",
                 )
                 cv2.imwrite(image_file_path, image_data)
                 print(f"Image saved to {image_file_path}")

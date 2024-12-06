@@ -63,7 +63,7 @@ def process_db3_file(db3_file, output_dir):
                     topic_frame_counters[topic] = frame_id_image + 1
                     image_file_path = os.path.join(
                         output_image_dir,
-                        f"{topic.replace('/', '_').strip('_')}_compressed_{frame_id_image}_{timestamp}.png",
+                        f"{topic.replace('/', '_').strip('_')}_CompressedImage_{frame_id_image}_{timestamp}.png",
                     )
                     cv2.imwrite(image_file_path, image)
                     print(f"Compressed image saved to {image_file_path}")
@@ -81,7 +81,7 @@ def process_db3_file(db3_file, output_dir):
                 topic_frame_counters[topic] = frame_id_image + 1
                 image_file_path = os.path.join(
                     output_image_dir,
-                    f"{topic.replace('/', '_').strip('_')}_raw_{frame_id_image}_{timestamp}.png",
+                    f"{topic.replace('/', '_').strip('_')}_Image_{frame_id_image}_{timestamp}.png",
                 )
                 cv2.imwrite(image_file_path, image_data)
                 print(f"Image saved to {image_file_path}")

@@ -11,8 +11,16 @@ topics_to_check = {
     "/hugin_raf_1/radar_data": PointCloud2,
 }
 
+# 主文件夹路径，里面包含多个子文件夹
+parent_dir = "/media/sax/新加卷/db3"
+# 输出目录路径
+output_parent_dir = "/media/sax/新加卷/processed_db3"
 
-def process_db3_file(db3_file):
+# 确保输出目录存在
+os.makedirs(output_parent_dir, exist_ok=True)
+
+
+def process_db3_file(db3_file, output_dir):
     # 检查文件是否存在
     if not os.path.isfile(db3_file):
         print(f"Error: DB3 file '{db3_file}' not found.")
@@ -20,8 +28,8 @@ def process_db3_file(db3_file):
 
     # 从 db3 文件名生成 CSV 和 TXT 文件名
     db3_base_name = os.path.splitext(os.path.basename(db3_file))[0]
-    output_csv_pc2 = f"{db3_base_name}_PointCloud2.csv"
-    output_txt_pc2 = f"{db3_base_name}_PointCloud2.txt"
+    output_csv_pc2 = os.path.join(output_dir, f"{db3_base_name}_PointCloud2.csv")
+    output_txt_pc2 = os.path.join(output_dir, f"{db3_base_name}_PointCloud2.txt")
 
     # 用于存储 PointCloud2 数据
     all_data_pc2 = []
@@ -80,11 +88,8 @@ def process_db3_file(db3_file):
     if all_data_pc2:
         try:
             # 确保文件夹路径有效
-            output_dir = os.path.dirname(output_csv_pc2)
-            print(f"输出目录: {output_dir}")  # 调试输出：显示输出目录路径
-            if not os.path.exists(output_dir) and output_dir != "":
+            if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
-
             # 将数据保存到 CSV 文件
             df_pc2 = pd.DataFrame(all_data_pc2, columns=columns_pc2)
             df_pc2.to_csv(output_csv_pc2, index=False)  # 禁用索引
@@ -99,6 +104,24 @@ def process_db3_file(db3_file):
         print(f"No PointCloud2 data found in {db3_file}")
 
 
-# 示例：调用函数来处理 db3 文件
-db3_file = "/home/sax/ROS2_Tools/hugin-fog/rosbag2_2024_12_02-16_44_19_0.db3"
-process_db3_file(db3_file)
+def process_all_db3_files(parent_dir, output_parent_dir):
+    # 遍历父目录下的所有子文件夹
+    for root, dirs, files in os.walk(parent_dir):
+        # 只处理 db3 文件
+        for file in files:
+            if file.endswith(".db3"):
+                db3_file_path = os.path.join(root, file)
+
+                # 创建一个与 db3 文件所在文件夹同名的输出文件夹
+                relative_path = os.path.relpath(root, parent_dir)
+                output_dir = os.path.join(output_parent_dir, relative_path)
+
+                # 确保输出文件夹存在
+                os.makedirs(output_dir, exist_ok=True)
+
+                print(f"开始处理 {db3_file_path} ...")
+                process_db3_file(db3_file_path, output_dir)
+
+
+# 示例：调用函数来处理所有 db3 文件
+process_all_db3_files(parent_dir, output_parent_dir)

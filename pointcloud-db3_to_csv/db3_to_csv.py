@@ -10,13 +10,13 @@ parent_dir = "/media/sax/新加卷/db3"
 # 输出目录路径
 output_parent_dir = "/media/sax/新加卷/processed_db3"
 
-# 需要读取的指定话题列表
-topics_to_process = [
-    "/usb_cam_1/compressed",  # 话题1
-    "/camera/depth/image_raw",  # 话题2
-    "/hugin_raf_1/radar_data",
-    # 添加其他你需要处理的话题
-]
+# # 需要读取的指定话题列表
+# topics_to_process = [
+#     # "/usb_cam_1/compressed",  # 话题1
+#     # "/camera/depth/image_raw",  # 话题2
+#     # "/hugin_raf_1/radar_data",
+#     # # 添加其他你需要处理的话题
+# ]
 
 # 确保输出目录存在
 os.makedirs(output_parent_dir, exist_ok=True)
@@ -29,15 +29,16 @@ def save_pointcloud_data(data, columns, output_csv, output_txt):
             # 保存为 CSV 文件
             df = pd.DataFrame(data, columns=columns)
             df.to_csv(output_csv, index=False)
-            print(f"PointCloud 数据已保存到 {output_csv}")
+            print(f"点云数据已保存到 {output_csv}")
 
             # 保存为 TXT 文件
             df.to_csv(output_txt, sep=" ", index=False, header=True)
-            print(f"PointCloud 数据已保存到 {output_txt}")
+            print(f"点云数据已保存到 {output_txt}")
         except Exception as e:
             print(f"Error saving PointCloud data: {e}")
     else:
-        print("没有点云数据需要保存")
+        # print("没有点云数据需要保存")
+        print("")
 
 
 def process_db3_file(db3_file, output_dir):
@@ -57,7 +58,7 @@ def process_db3_file(db3_file, output_dir):
 
     print(f"开始处理 db3 文件 '{db3_file}' 中的点云数据...")
 
-    # 为每个话题初始化独立的 frame_id
+    # 为每个 topic 初始化独立的 frame_id
     topic_frame_counters = {}
 
     # 获取所有话题类型
@@ -73,17 +74,29 @@ def process_db3_file(db3_file, output_dir):
     # 读取消息
     while reader.has_next():
         topic, serialized_msg, timestamp_ns = reader.read_next()
-        print(f"Reading topic: {topic}")
 
-        # 判断当前话题是否在需要处理的列表中
-        if topic not in topics_to_process:
-            continue  # 如果当前话题不在指定列表中，跳过此话题
+        # # 注意，如果想指定话题进行读取，请开启这部分代码。
+        # # 判断当前话题是否在需要处理的列表中
+        # if topic not in topics_to_process:
+        #     print(f"No topic in the list !!! ")
+        #     print(f"No topic in the list !!! ")
+        #     print(f"No topic in the list !!! ")
+        #     return  # 如果当前话题不在指定列表中，跳过此话题
 
         # 判断消息类型并反序列化
         msg_type = topic_types.get(topic)
         if not msg_type:
             print(f"Warning: Unknown message type for topic '{topic}'")
             continue
+
+        if msg_type not in [
+            "sensor_msgs/msg/PointCloud2",
+            "sensor_msgs/msg/PointCloud",
+        ]:
+            print(f"Skipping non-pointcloud topic '{topic}'")
+            continue
+        else:
+            print(f"Processing topic: {topic}")
 
         try:
             if msg_type == "sensor_msgs/msg/PointCloud2":  # 处理 PointCloud2 消息
